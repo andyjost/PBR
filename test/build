@@ -1,0 +1,10 @@
+INCLUDE="-I /usr/include/python2.6 -I $HOME/libs/boost/ -I $HOME/cs510-oss/PBR/include"
+DBG="-g"
+# notice: [python-cfg] Details of this Python configuration:
+# notice: [python-cfg]   interpreter command: "/usr/bin/python2.6"
+# notice: [python-cfg]   include path: "/usr/include/python2.6"
+# notice: [python-cfg]   library path: "/usr/lib/python2.6/config" "/usr/lib"
+LIBS="$HOME/libs/boost/lib/libboost_python$DBG.so"
+
+g++ -c hello.cpp -fPIC -o hello.o $INCLUDE $DBG -O0
+g++ -shared hello.o $LIBS -o hello.so $DBG
