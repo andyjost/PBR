@@ -16,6 +16,10 @@ namespace pbr { namespace aux
   using namespace boost::python;
   using boost::python::ssize_t;
 
+  // object_item is like a reference to an object.  It requires a slot in a
+  // mutable sequence, such as a list.
+  using api::object_item;
+
   struct range_base
   {
     range_base(object obj)
@@ -45,6 +49,7 @@ namespace pbr { namespace aux
   template<typename TraversalTag, typename Value> class const_iterator {};
 
   // Incrementable
+  // Due to the way Python works, incrementable ranges are always constant;
   // TODO: concept check -- Value is an rvalue
   template<typename Value>
   struct const_iterator<boost::incrementable_traversal_tag, Value>
@@ -62,30 +67,6 @@ namespace pbr { namespace aux
     }
     const_iterator(range_base const & range, bool end)
       : const_iterator::iterator_adaptor_(
-            end
-                ? stl_input_iterator<Value>()
-                : stl_input_iterator<Value>(range.m_obj)
-          )
-    {
-    }
-  };
-
-  template<typename Value>
-  struct iterator<boost::incrementable_traversal_tag, Value>
-    : boost::iterator_adaptor<
-          iterator<boost::incrementable_traversal_tag, Value>
-        , const_iterator<boost::incrementable_traversal_tag, Value>
-        , Value
-        , boost::incrementable_traversal_tag
-        , Value
-        >
-  {
-    iterator()
-      : iterator::iterator_adaptor_()
-    {
-    }
-    iterator(range_base const & range, bool end)
-      : iterator::iterator_adaptor_(
             end
                 ? stl_input_iterator<Value>()
                 : stl_input_iterator<Value>(range.m_obj)
@@ -117,7 +98,7 @@ namespace pbr { namespace aux
     // facade interface
     friend class boost::iterator_core_access;
     typename const_iterator::iterator_facade_::reference
-      dereference() const { return m_obj[m_loc]; }
+      dereference() const { return extract<Value>(m_obj[m_loc]); }
     template<typename Y>
       bool equal(Y y) const { return m_loc == y.m_loc && m_obj == y.m_obj; }
     void increment() { ++m_loc; }
@@ -133,41 +114,13 @@ namespace pbr { namespace aux
   };
 
   // Mutable RandomAccess
-  #if 0
   template<>
-  struct iterator<boost::random_access_traversal_tag, object>
-    : boost::iterator_adaptor<
-          iterator<boost::random_access_traversal_tag, object>
-        , const_iterator<boost::random_access_traversal_tag, api::object_item>
-        , api::object_item // proxy
-        , boost::random_access_traversal_tag
-        , api::object_item
-        >
-  {
-  private:
-    typedef iterator::iterator_adaptor_::base_type base_type;
-  public:
-    iterator()
-      : iterator::iterator_adaptor_()
-    {
-    }
-    iterator(range_base const & range, bool end)
-      : iterator::iterator_adaptor_(base_type(range, end))
-    {
-    }
-  };
-  #endif
-
-  // typedef object object_type;
-  typedef api::object_item object_type;
-
-  template<>
-  struct iterator<boost::random_access_traversal_tag, object>
+  struct iterator<boost::random_access_traversal_tag, object_item>
     : boost::iterator_facade<
-          iterator<boost::random_access_traversal_tag, object>
-        , object_type
+          iterator<boost::random_access_traversal_tag, object_item>
+        , object_item
         , boost::random_access_traversal_tag
-        , object_type
+        , object_item
         >
   {
     iterator()
@@ -183,7 +136,7 @@ namespace pbr { namespace aux
     // facade interface
     friend class boost::iterator_core_access;
     iterator::iterator_facade_::reference
-      dereference() const { return const_cast<object &>(m_obj)[m_loc]; }
+      dereference() const { return (const_cast<object &>(m_obj))[m_loc]; }
     template<typename Y>
       bool equal(Y y) const { return m_loc == y.m_loc && m_obj == y.m_obj; }
     void increment() { ++m_loc; }
@@ -238,14 +191,26 @@ namespace pbr
       {                                                                        \
         return const_iterator(this->m_obj, true);                              \
       }                                                                        \
-    };
+    }
 
-  PBR_define_range_class(an,, incrementable, aux::const_iterator)
-  PBR_define_range_class(a,, random_access, aux::const_iterator)
-  PBR_define_range_class(a, mutable_, random_access, aux::iterator)
+  // --- incrementable_range ---
+  PBR_define_range_class(an,, incrementable, aux::const_iterator);
+  // --- random_access_range ---
+  PBR_define_range_class(a,, random_access, aux::const_iterator);
+
+  // --- mutable_random_access_range ---
+  // The Value type may not be specified.  It is always a mutable reference to
+  // a Python object.
+  PBR_define_range_class(a, _mutable_, random_access, aux::iterator);
+
+  // Make object_item and the one and only version of this range available.
+  using aux::object_item;
+  typedef _mutable_random_access_range<object_item> mutable_random_access_range;
+
   #undef PBR_define_range_class
 }
 
+// Overload std::swap and std::iter_swap for Python objects.
 namespace std
 {
   #define PBR_item boost::python::api::object_item
@@ -253,22 +218,21 @@ namespace std
 
   template<> void swap<PBR_item>(PBR_item & a, PBR_item & b)
   {
-    PBR_object tmp0(a), tmp1(b);
-    a = tmp1;
+    PBR_object tmp0(a);
+    a = b;
     b = tmp0;
   }
 
   // This is needed to work around STL implementations that use iter_swap to
   // implement algorithms such as random_shuffle.
 
-  #define PBR_iterator pbr::aux::iterator<                        \
-      boost::random_access_traversal_tag, boost::python::object>
+  #define PBR_iterator pbr::aux::iterator<         \
+      boost::random_access_traversal_tag, PBR_item \
+    >
 
   template<>
   void iter_swap<PBR_iterator, PBR_iterator>(PBR_iterator a, PBR_iterator b)
   {
-    // TODO: confirm that this is right.  It seems the temporaries are needed
-    // because the object_item  already acts like a reference.
     PBR_item a_(*a), b_(*b);
     swap(a_, b_);
   }

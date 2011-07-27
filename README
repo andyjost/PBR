@@ -1,0 +1,38 @@
+This is PBR version 1.0
+============================
+
+Copyright (c) 2011 Andy Jost
+All rights reserved.
+
+
+License information
+-------------------
+
+See the file "LICENSE.txt" for information on the history of this
+software, terms & conditions for usage, and a DISCLAIMER OF ALL
+WARRANTIES.
+
+
+What is PBR?
+------------
+
+PBR is a microlibrary that extends Boost.Python to provide support for treating
+Python objects as models of Boost.Range.  If you are already using
+Boost.Python, PBR will give you new tools that may help you write cleaner
+interface to Python.
+
+Information about Boost.Python and Boost.Range can be found at www.boost.org.
+Information about Python can be found at www.python.org.
+
+
+Getting Started
+---------------
+Make sure you have Boost and Python installed.  PBR was tested with Boost
+version 1.46 and Python version 2.6.5.  PBR requires linking to the
+Boost.Python runtime libraries.  Refer to the Boost documentation for help
+building Boost.Python.  Newer versions of Boost, and newer version of Pythong
+2.x will probably work just fine.  PBR was not tested against any version of
+Python 3000.
+
+After you have the dependencies set up, check the paths in tests/makefile, then
+test PBR by issuing "make test" from the tests/ directory.
