@@ -17,12 +17,12 @@ What is PBR?
 ------------
 
 PBR is a microlibrary that extends Boost.Python to provide support for treating
-Python objects as models of Boost.Range.  If you are already using
+Python objects as models of Boost.Range.  That If you are already using
 Boost.Python, PBR will give you new tools that may help you write cleaner
 interface to Python.
 
-Information about Boost.Python and Boost.Range can be found at www.boost.org.
-Information about Python can be found at www.python.org.
+For more information, visit www.boost.org/libs/python (Boost.Python),
+www.boost.org/libs/range (Boost.Range), and www.python.org (Python).
 
 
 Getting Started
@@ -30,9 +30,34 @@ Getting Started
 Make sure you have Boost and Python installed.  PBR was tested with Boost
 version 1.46 and Python version 2.6.5.  PBR requires linking to the
 Boost.Python runtime libraries.  Refer to the Boost documentation for help
-building Boost.Python.  Newer versions of Boost, and newer version of Pythong
+building Boost.Python.  Newer versions of Boost, and newer versions of Python
 2.x will probably work just fine.  PBR was not tested against any version of
-Python 3000.
+Python 3.
 
-After you have the dependencies set up, check the paths in tests/makefile, then
-test PBR by issuing "make test" from the tests/ directory.
+After you have the dependencies set up, check the paths in test/makefile, then
+test PBR by issuing "make test" from the test/ directory.
+
+
+Build Help
+----------
+PBR is a header-only library that depends on Boost.Python (which is not a
+header-only library).  On Linux, you would most commonly use PBR and
+Boost.Python to extend Python by creating a new shared object (.so) file
+containing a Python module.  The module is accessed from Python through the
+"import" facility.
+
+To compile your PBR-dependent project, you will need to be sure the compiler's
+include paths are configured to find Python, Boost, and PBR headers.  You will
+need to link against a version of the Boost.Python runtime library, e.g.,
+libboost_python.so.
+
+If you link against the dynamic Boost.Python library, you may need to modify
+LD_LIBRARY_PATH so that the Boost library is found at runtime.
+
+See the test/ subdirectory in this project for examples.
+
+
+Author
+------
+PBR was written by Andy Jost.  Contact me at ajost@synopsys.com.
+

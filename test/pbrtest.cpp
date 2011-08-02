@@ -4,6 +4,10 @@
 #include "pbr.hpp"
 #include <boost/foreach.hpp>
 #include <boost/range.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
+#include <boost/preprocessor/seq/for_each_product.hpp>
+#include <boost/preprocessor/seq/elem.hpp>
+#include <boost/preprocessor/stringize.hpp>
 #include <iostream>
 #include <string>
 
@@ -13,63 +17,54 @@ using namespace boost::python;
 
 // Count the items in the sequence.  Just tests that we can iterate over the
 // sequence, casting each element to the correct type.
-template<template <typename> class Range, typename Value>
+template<typename Range>
 int count_const(object seq)
 {
   int num = 0;
-  Value v;
-  foreach(v, Range<Value>(seq)) { ++num; }
-  return num;
-}
-
-template<typename MutableRange, typename Value>
-int count_mutable(object seq)
-{
-  int num = 0;
-  foreach(pbr::object_item v, MutableRange(seq))
-  {
-    Value v = extract<Value>(object(v));
-    ++num;
-  }
+  typename Range::value_type v;
+  foreach(v, Range(seq)) { ++num; }
   return num;
 }
 
 BOOST_PYTHON_MODULE(pbrtest)
 {
+  // Make versions of the test functions for each of these types.
+  #define PBR_py_types (object)(int)(str)(tuple)(list)
+
   // const and incrementable
-  def("count_incrementable_object", count_const<pbr::incrementable_range, object>, "");
-  def("count_incrementable_int", count_const<pbr::incrementable_range, int>, "");
-  def("count_incrementable_str", count_const<pbr::incrementable_range, str>, "");
+  // Make a function count_incrementable_<type> for each type in the above list.
+  #define PBR_def(r, data, tp) \
+    def(                     \
+        "count_incrementable_" BOOST_PP_STRINGIZE(tp)  \
+      , count_const<pbr::incrementable_range<tp> >     \
+      , ""                   \
+      );
+  BOOST_PP_SEQ_FOR_EACH(PBR_def,,PBR_py_types)
+  #undef PBR_def
 
   // const and random_access
-  def("count_random_access_object", count_const<pbr::random_access_range, object>, "");
-  def("count_random_access_int", count_const<pbr::random_access_range, int>, "");
-  def("count_random_access_str", count_const<pbr::random_access_range, str>, "");
+  // Make a function count_random_access_<type> for each type in the above list.
+  #define PBR_def(r, data, tp) \
+      def(                   \
+          "count_random_access_" BOOST_PP_STRINGIZE(tp) \
+        , count_const<pbr::random_access_range<tp> >    \
+        , ""                 \
+        );
+  BOOST_PP_SEQ_FOR_EACH(PBR_def,,PBR_py_types)
+  #undef PBR_def
 
-  #if 0
-  // mutable and incrementable
-  def(
-      "count_mutable_incrementable_object"
-    , count_mutable<pbr::mutable_incrementable_range, pbr::object_item>
-    , ""
-    );
-  #endif
-
-  // mutable and random_access
-  def(
-      "count_mutable_random_object"
-    , count_mutable<pbr::mutable_random_access_range, object>
-    , ""
-    );
-  def(
-      "count_mutable_random_int"
-    , count_mutable<pbr::mutable_random_access_range, int>
-    , ""
-    );
-  def(
-      "count_mutable_random_str"
-    , count_mutable<pbr::mutable_random_access_range, str>
-    , ""
-    );
+  // const and random_access mapping
+  // Make a function count_mapping_<type0>_<type1> for each pair of types in
+  // the cross product of the above list with itself.
+  #define PBR_def(tp0, tp1) \
+      def(                \
+          "count_mapping_" BOOST_PP_STRINGIZE(tp0) "_" BOOST_PP_STRINGIZE(tp1) \
+        , count_const<pbr::mapping_range<tp0, tp1> >                           \
+        , ""              \
+        );
+  #define PBR_def2(r, product) PBR_def(BOOST_PP_SEQ_ELEM(0, product), BOOST_PP_SEQ_ELEM(1, product))
+  BOOST_PP_SEQ_FOR_EACH_PRODUCT(PBR_def2, (PBR_py_types)(PBR_py_types))
+  #undef PBR_def
+  #undef PBR_def2
 }
 
