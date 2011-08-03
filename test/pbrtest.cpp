@@ -16,14 +16,42 @@
 using namespace boost::python;
 
 // Count the items in the sequence.  Just tests that we can iterate over the
-// sequence, casting each element to the correct type.
+// sequence, casting each element to the expected type.
 template<typename Range>
-int count_const(object seq)
+int count(object seq)
 {
   int num = 0;
   typename Range::value_type v;
   foreach(v, Range(seq)) { ++num; }
   return num;
+}
+
+// Modify a sequence by applying the expression "item+=1" to each item.
+void increment_sequence(object seq)
+{
+  using namespace pbr;
+  foreach(object_item item, random_access_range<object_item>(seq))
+  {
+    item += 1;
+  }
+}
+
+// Modify a sequence by applying the expression "item*=2" to each item.
+void double_sequence(object seq)
+{
+  using namespace pbr;
+  foreach(object_item item, random_access_range<object_item>(seq))
+  {
+    item *= 2;
+  }
+}
+
+// Shuffle the items in a sequence "randomly".
+void shuffle_sequence(object seq)
+{
+  using namespace pbr;
+  random_access_range<object_item> range(seq);
+  std::random_shuffle(range.begin(), range.end());
 }
 
 BOOST_PYTHON_MODULE(pbrtest)
@@ -36,7 +64,7 @@ BOOST_PYTHON_MODULE(pbrtest)
   #define PBR_def(r, data, tp) \
     def(                     \
         "count_incrementable_" BOOST_PP_STRINGIZE(tp)  \
-      , count_const<pbr::incrementable_range<tp> >     \
+      , count<pbr::incrementable_range<tp> >           \
       , ""                   \
       );
   BOOST_PP_SEQ_FOR_EACH(PBR_def,,PBR_py_types)
@@ -47,7 +75,7 @@ BOOST_PYTHON_MODULE(pbrtest)
   #define PBR_def(r, data, tp) \
       def(                   \
           "count_random_access_" BOOST_PP_STRINGIZE(tp) \
-        , count_const<pbr::random_access_range<tp> >    \
+        , count<pbr::random_access_range<tp> >          \
         , ""                 \
         );
   BOOST_PP_SEQ_FOR_EACH(PBR_def,,PBR_py_types)
@@ -59,12 +87,16 @@ BOOST_PYTHON_MODULE(pbrtest)
   #define PBR_def(tp0, tp1) \
       def(                \
           "count_mapping_" BOOST_PP_STRINGIZE(tp0) "_" BOOST_PP_STRINGIZE(tp1) \
-        , count_const<pbr::mapping_range<tp0, tp1> >                           \
+        , count<pbr::mapping_range<tp0, tp1> >                                 \
         , ""              \
         );
   #define PBR_def2(r, product) PBR_def(BOOST_PP_SEQ_ELEM(0, product), BOOST_PP_SEQ_ELEM(1, product))
   BOOST_PP_SEQ_FOR_EACH_PRODUCT(PBR_def2, (PBR_py_types)(PBR_py_types))
   #undef PBR_def
   #undef PBR_def2
+
+  def("increment_sequence", increment_sequence, "");
+  def("double_sequence", double_sequence, "");
+  def("shuffle_sequence", shuffle_sequence, "");
 }
 

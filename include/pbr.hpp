@@ -103,8 +103,7 @@ namespace pbr { namespace aux
     friend class boost::iterator_core_access;
     typename iterator::iterator_facade_::reference
       dereference() const { return extract<Value>(m_obj[m_loc]); }
-    template<typename Y>
-      bool equal(Y y) const { return m_loc == y.m_loc && m_obj == y.m_obj; }
+    template<typename Y> bool equal(Y y) const { return m_loc == y.m_loc; }
     void increment() { ++m_loc; }
     void decrement() { --m_loc; }
     template<typename N> void advance(N n) { m_loc += n; }
@@ -116,6 +115,14 @@ namespace pbr { namespace aux
     object m_obj;
     ssize_t m_loc;
   };
+
+  // Specialization of iterator::dereference() for Value=object_item.  An
+  // iterator over object_items can return the item proxy, even if the iterator
+  // is const.
+  template<>
+  iterator<boost::random_access_traversal_tag, object_item>::iterator_facade_::reference
+  iterator<boost::random_access_traversal_tag, object_item>::dereference() const
+  { return (const_cast<object&>(m_obj))[m_loc]; }
 
   // Mapping
   //

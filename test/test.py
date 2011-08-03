@@ -3,6 +3,7 @@
 # Copyright (c) 2011 Andy Jost
 # Please see the file LICENSE.txt in this distribution for license terms.
 
+import copy
 import pbrtest
 import unittest
 
@@ -25,7 +26,7 @@ class PbrTest(unittest.TestCase):
     MAPS[(tuple,str)] = {(1,1):'11', (1,2):'12', (2,1):'21', (2,2):'22'}
     self.MAPS = MAPS
 
-  def test_basic(self):
+  def testBasic(self):
     """
     These basic tests simply check whether the C++ code can iterate over the
     sequence and return its length.  Since the C++ code is typed, we expect the
@@ -79,8 +80,45 @@ class PbrTest(unittest.TestCase):
         self.assertTrue(func(item) == len(item), msg=msg)
       else:
         # This func should not be able to iterate item
-        print msg
         self.assertRaises(Exception, lambda: func(item))
+
+  def testMutableSequences(self):
+    """
+    Do some basic things with mutable sequences.  Depending on the operation
+    (e.g., increment versus double) the the operation may work.
+    """
+    seqint = range(3)
+    seqstr = ['a', 'b', 'c']
+
+    # Increment each item.
+    pbrtest.increment_sequence(seqint)
+    self.assertTrue(seqint == range(1,4))
+    self.assertRaises(Exception, lambda: pbrtest.increment_sequence(seqstr))
+
+    # Double each item.
+    pbrtest.double_sequence(seqint)
+    self.assertTrue(seqint == range(2,8,2))
+    pbrtest.double_sequence(seqstr)
+    self.assertTrue(seqstr == ['aa', 'bb', 'cc'])
+
+    # Try a hybrid sequence.
+    hybridseq = ['a', 3, 4.5, 1+2j, ('a', 'b')]
+    pbrtest.double_sequence(hybridseq)
+    self.assertTrue(hybridseq == ['aa', 6, 9.0, 2+4j, ('a', 'b', 'a', 'b')])
+
+    # Shuffle a sequence (two ways).
+    # First way: use the hybrid sequence.
+    ans0 = set(hybridseq)
+    cpy = copy.deepcopy(hybridseq)
+    pbrtest.shuffle_sequence(hybridseq)
+    self.assertTrue(cpy != hybridseq)
+    self.assertTrue(ans0 == set(hybridseq))
+
+    # Second way: use range() to avoid any possible mixups due to deepcopy().
+    input = range(100)
+    pbrtest.shuffle_sequence(input)
+    self.assertTrue(input != range(100))
+    self.assertTrue(sorted(input) == range(100))
 
 if __name__ == '__main__':
   unittest.main()
