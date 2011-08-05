@@ -2,8 +2,10 @@
 // Please see the file LICENSE.txt in this distribution for license terms.
 
 #include "pbr.hpp"
+#include "pbr_adaptors.hpp"
 #include <boost/foreach.hpp>
 #include <boost/range.hpp>
+#include <boost/range/adaptors.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/seq/for_each_product.hpp>
 #include <boost/preprocessor/seq/elem.hpp>
@@ -14,6 +16,16 @@
 #define foreach BOOST_FOREACH
 
 using namespace boost::python;
+void mytest(object seq)
+{
+  using pbr::adaptors::map_keys;
+
+  pbr::mapping_range<str, object> my_map(seq);
+  foreach(str key, my_map | map_keys)
+  {
+    std::cout << extract<std::string>(key)() << std::endl;
+  }
+}
 
 // Count the items in the sequence.  Just tests that we can iterate over the
 // sequence, casting each element to the expected type.
@@ -98,5 +110,6 @@ BOOST_PYTHON_MODULE(pbrtest)
   def("increment_sequence", increment_sequence, "");
   def("double_sequence", double_sequence, "");
   def("shuffle_sequence", shuffle_sequence, "");
+  def("mytest", mytest, "");
 }
 
