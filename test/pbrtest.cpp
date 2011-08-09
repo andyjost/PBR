@@ -6,26 +6,62 @@
 #include <boost/foreach.hpp>
 #include <boost/range.hpp>
 #include <boost/range/adaptors.hpp>
+#include <boost/range/algorithm/heap_algorithm.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/seq/for_each_product.hpp>
 #include <boost/preprocessor/seq/elem.hpp>
 #include <boost/preprocessor/stringize.hpp>
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 #define foreach BOOST_FOREACH
 
 using namespace boost::python;
+#if 0
 void mytest(object seq)
 {
   using pbr::adaptors::map_keys;
 
-  pbr::mapping_range<str, object> my_map(seq);
-  foreach(str key, my_map | map_keys)
+  // pbr::mapping_range<str, object> my_map(seq);
+
+  // list lst;
+  // pbr::random_access_range<pbr::object_item> my_range(lst);
+  // push_back(my_range, my_map | map_keys);
+  // sort(my_range);
+
+  // foreach(str key, my_map | map_keys)
+  // {
+  //   std::cout << extract<std::string>(key)() << std::endl;
+  // }
+}
+#endif
+
+#if 0
+void foo(object seq, object func)
+{
+  list scratch(seq);
+  str x(scratch);
+  std::cout << extract<std::string>(x)() << std::endl;
+
+  pbr::random_access_range3<pbr::object_item> my_range(scratch);
+
+  // make_heap(my_range);
+  std::make_heap(my_range.begin(), my_range.end());
+  x = str(scratch);
+  std::cout << extract<std::string>(x)() << std::endl;
+
+  int i =0;
+  while(!empty(my_range))
   {
-    std::cout << extract<std::string>(key)() << std::endl;
+    std::cout << "size: " << my_range.size() << " begin: " << my_range.begin().m_loc << " end: " << my_range.end().m_loc << std::endl;
+    object arg = my_range.front();
+    func(arg);
+    pop_heap(my_range);
+    if(i++ == 15) break;
   }
 }
+#endif
 
 // Count the items in the sequence.  Just tests that we can iterate over the
 // sequence, casting each element to the expected type.
@@ -110,6 +146,7 @@ BOOST_PYTHON_MODULE(pbrtest)
   def("increment_sequence", increment_sequence, "");
   def("double_sequence", double_sequence, "");
   def("shuffle_sequence", shuffle_sequence, "");
-  def("mytest", mytest, "");
+  // def("mytest", mytest, "");
+  // def("foo", foo, "");
 }
 
