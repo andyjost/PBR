@@ -1,6 +1,8 @@
 // Copyright (c) 2011 Andy Jost
 // Please see the file LICENSE.txt in this distribution for license terms.
 
+#define BOOST_RANGE_ENABLE_CONCEPT_ASSERT 0
+
 #include <boost/python.hpp>
 #include <boost/python/object_core.hpp>
 #include <boost/python/stl_iterator.hpp>

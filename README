@@ -17,9 +17,9 @@ What is PBR?
 ------------
 
 PBR is a microlibrary that extends Boost.Python to provide support for treating
-Python objects as models of Boost.Range.  That If you are already using
+Python objects as models of Boost.Range.  If you are already using
 Boost.Python, PBR will give you new tools that may help you write cleaner
-interface to Python.
+interfaces to Python.
 
 For more information, visit www.boost.org/libs/python (Boost.Python),
 www.boost.org/libs/range (Boost.Range), and www.python.org (Python).

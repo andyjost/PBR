@@ -5,11 +5,7 @@ SHARED_LIBS := pbrtest.so
 # == TESTS ==================================================
 # Run the tests found in test.py. 
 test: pbrtest.so
-	@NULL="$(shell                                                      \
-      LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:$(BOOST_PYTHON_LIB_PATH)" \
-      python test.py                                                  \
-    | tee test.log                                                    \
-    )"
+	@LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:$(BOOST_PYTHON_LIB_PATH)" python test.py
 
 include ../make.include
 
