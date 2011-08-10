@@ -34,7 +34,7 @@ building Boost.Python.  Newer versions of Boost, and newer versions of Python
 2.x will probably work just fine.  PBR was not tested against any version of
 Python 3.
 
-After you have the dependencies set up, check the paths in test/makefile, then
+After you have the dependencies set up, check the paths in make.include, then
 test PBR by issuing "make test" from the test/ directory.
 
 
