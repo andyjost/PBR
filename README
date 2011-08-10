@@ -54,7 +54,7 @@ libboost_python.so.
 If you link against the dynamic Boost.Python library, you may need to modify
 LD_LIBRARY_PATH before starting Python, so that the Boost library is found at
 runtime.  That is most likely the problem if Python raises an error like the
-following when you try to import you extension:
+following when you try to import your extension:
 
     ImportError: libboost_python.so.1.46.1: cannot open shared object file: No
         such file or directory
