@@ -1,3 +1,6 @@
+# Copyright (c) 2011 Andy Jost
+# Please see the file LICENSE.txt in this distribution for license terms.
+
 SOURCES := pbrtest.cpp
 OBJECTS := $(SOURCES:.cpp=.o)
 SHARED_LIBS := pbrtest.so

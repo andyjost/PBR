@@ -1,3 +1,8 @@
+#!/usr/local/bin/python
+
+# Copyright (c) 2011 Andy Jost
+# Please see the file LICENSE.txt in this distribution for license terms.
+
 import example1
 
 print "This script demonstrates the examples from the wiki Introduction page."
