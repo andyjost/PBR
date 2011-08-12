@@ -43,11 +43,18 @@ void modifySeq(object py_seq_object)
   foreach(object_item item, my_range) { item *= item; }
   boost::sort(my_range);
 }
+int as_int(object obj)
+{
+  long_ lng(obj);
+  int const i = extract<int>(lng);
+  return i;
+}
 
 BOOST_PYTHON_MODULE(example1)
 {
   def("foreach", foreach_, "foreach example");
   def("dictKeys", dictKeys, "iterate over the keys in a dict");
   def("modifySeq", modifySeq, "modify a sequence in place");
+  def("as_int", as_int, "simulates int(x)");
 }
 
